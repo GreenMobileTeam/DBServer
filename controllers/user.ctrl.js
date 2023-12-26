@@ -2,7 +2,8 @@ const bcrypt = require('bcrypt');
 const { connectDB } = require('../db');
 
 exports.signup = (req, res) => {
-    const { username, password } = req.body;
+    console.log('Signup handler called');
+    const { username, password, nickname } = req.body;
 
     // 비밀번호 해싱
     bcrypt.hash(password, 10, (err, hash) => {
@@ -13,8 +14,8 @@ exports.signup = (req, res) => {
 
         connectDB((connection) => {
             // 데이터베이스에 새로운 사용자 추가
-            const sql = 'INSERT INTO usertable (username, password) VALUES (?, ?)';
-            connection.query(sql, [username, hash], (err, results) => {
+            const sql = 'INSERT INTO usertable (username, password, nickname) VALUES (?, ?, ?)';
+            connection.query(sql, [username, hash, nickname], (err, results) => {
                 if (err) {
                     console.error(err);
                     return res.status(500).json({ error: 'Internal Server Error' });
