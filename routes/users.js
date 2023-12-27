@@ -10,8 +10,10 @@ router.get('/', (req, res) => {
 
 // 회원가입
 router.post('/signup', userCtrl.signup);
+router.get('/checkDuplicate/:type/:value', userCtrl.checkDuplicate);
 
 // 로그인
 router.post('/login', userCtrl.login);
+router.post('/getLoginInfo', userCtrl.getLoginInfo);
 
 module.exports = router;
