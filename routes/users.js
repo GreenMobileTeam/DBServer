@@ -1,7 +1,8 @@
 // users.js 파일
 const express = require('express');
 const router = express.Router();
-const userCtrl = require('../controllers/user.ctrl');
+const loginCtrl = require('../controllers/login.ctrl');
+const signupCtrl = require('../controllers/signup.ctrl');
 
 // 기본 경로 추가
 router.get('/', (req, res) => {
@@ -9,11 +10,12 @@ router.get('/', (req, res) => {
 });
 
 // 회원가입
-router.post('/signup', userCtrl.signup);
-router.get('/checkDuplicate/:type/:value', userCtrl.checkDuplicate);
+router.post('/signup', signupCtrl.signup);
+router.get('/checkDuplicate/:type/:value', signupCtrl.checkDuplicate);
+router.get('/checkCensorship/:type/:value', signupCtrl.checkCensorship);
 
 // 로그인
-router.post('/login', userCtrl.login);
-router.post('/getLoginInfo', userCtrl.getLoginInfo);
+router.post('/login', loginCtrl.login);
+router.post('/getLoginInfo', loginCtrl.getLoginInfo);
 
 module.exports = router;
