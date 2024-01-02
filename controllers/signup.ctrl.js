@@ -1,69 +1,44 @@
 const bcrypt = require('bcrypt');
-const { connectDB } = require('../db');
+const { connectDB, query, sessionStore } = require('../db.js');
 
-
-exports.checkDuplicate = (req, res) => {
-    const { type, value } = req.params;
-    connectDB((connection) => {
-      const sql = `SELECT * FROM usertable WHERE ${type} = ?`;
-      connection.query(sql, [value], (err, results) => {
-        if (err) {
-          console.error(err);
-          connection.release();
-          return res.status(500).json({ error: '내부 서버 오류' });
-        }
-  
-        const isDuplicate = results.length > 0;
-        //console.log(isDuplicate);
-        res.status(200).json({ isDuplicate });
-        connection.release();
-      });
-    });
-  };
-
-exports.signup = (req, res) => {
-    console.log('Signup handler called');
+exports.signup = async (req, res) => {
     const { username, password, nickname } = req.body;
 
-    // 비밀번호 해싱
-    bcrypt.hash(password, 10, (err, hash) => {
-        if (err) {
-            console.error(err);
-            connection.release();
-            return res.status(500).json({ error: 'Internal Server Error' });
-        }
+    try {
+        const hash = await bcrypt.hash(password, 10);
+        const results = await query('INSERT INTO usertable (username, password, nickname) VALUES (?, ?, ?)', [username, hash, nickname]);
 
-        connectDB((connection) => {
-            // 데이터베이스에 새로운 사용자 추가
-            const sql = 'INSERT INTO usertable (username, password, nickname) VALUES (?, ?, ?)';
-            connection.query(sql, [username, hash, nickname], (err, results) => {
-                if (err) {
-                    console.error(err);
-                    connection.release();
-                    return res.status(500).json({ error: 'Internal Server Error' });
-                }
-
-                res.status(200).json({ message: 'User registered successfully' });
-                connection.release();
-            });
-        });
-    });
+        res.status(200).json({ message: '회원가입 완료' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: '서버 오류' });
+    }
 };
 
-exports.checkCensorship = (req, res) => {
-  const { type, value } = req.params;
-  connectDB((connection) => {
-    const sql = `SELECT * FROM censorshiptable WHERE ? LIKE CONCAT('%', word, '%')`;
-    connection.query(sql, [value], (err, results) => {
-      if (err) {
-        console.error(err);
-        connection.release();
-        return res.status(500).json({ error: 'Internal Server Error' });
-      }
+exports.checkDuplicate = async (req, res) => {
+    const { type, value } = req.params;
 
-      const isCensored = results.length > 0;
-      res.status(200).json({ isCensored });
-      connection.release();
-    });
-  });
+    try {
+        const results = await query(`SELECT * FROM usertable WHERE ${type} = ?`, [value]);
+
+        const isDuplicate = results.length > 0;
+        res.status(200).json({ isDuplicate });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: '서버 오류' });
+    }
+};
+
+exports.checkCensorship = async (req, res) => {
+    const { type, value } = req.params;
+
+    try {
+        const results = await query(`SELECT * FROM censorshiptable WHERE ? LIKE CONCAT('%', word, '%')`, [value]);
+        const isCensored = results.length > 0;
+        res.status(200).json({ isCensored });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: '서버 오류' });
+    }
 };
