@@ -14,16 +14,22 @@ exports.login = async (req, res) => {
         const result = await bcrypt.compare(password, results[0].password);
 
         if (!result) {
-            return res.status(401).json({ message: 'password' });
-        }
-
-        if (req.session.isLoggedIn) {
-          req.session.destroy();
+          return res.status(401).json({ message: 'password' });
       }
-        req.session.isLoggedIn = true;
-        req.session.user = results[0];
 
-        console.log(req.session.user);
+      console.log(req.session.user);
+      console.log(req.session.user.username);
+      if (req.session.user && req.session.user.username) {
+        console.log("파괴");
+        req.session.destroy();
+      }
+
+      req.session.user = {
+        isLoggedIn: true,
+        username: results[0].username
+      };
+
+      console.log(req.session.user.username);
 
         res.status(200).json({ message: 'success' });
     } catch (err) {
@@ -61,6 +67,15 @@ exports.getLogout = async (req, res) => {
       return res.status(500).json({ error: '서버 오류' });
   }
 };
+
+exports.checkSession = async (req, res) => {
+  if (req.session.user && req.session.user.username) {
+    res.status(200).json({ isLoggedIn: true, username: req.session.user.username });
+  } else {
+    res.status(401).json({ isLoggedIn: false });
+  }
+};
+
 
 exports.getUserTime = async (req, res) => {
   try{

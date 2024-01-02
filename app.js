@@ -26,7 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: "keyboard cat",
   resave: false,
-  saveUninitialized: true, 
+  saveUninitialized: false, 
   store: sessionStore
 }));
 
@@ -35,6 +35,7 @@ app.use('/', usersRouter);
 app.use('/login', usersRouter);
 app.use('/signup', usersRouter);
 app.use('/getLoginInfo', usersRouter);
+app.use('/checkSession', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
