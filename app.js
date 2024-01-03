@@ -22,7 +22,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.js 파일
 app.use('/', usersRouter);
 app.use('/login', usersRouter);
 app.use('/signup', usersRouter);
