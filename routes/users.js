@@ -17,6 +17,5 @@ router.get('/checkCensorship/:type/:value', signupCtrl.checkCensorship);
 // 로그인
 router.post('/login', loginCtrl.login);
 router.post('/getLoginInfo', loginCtrl.getLoginInfo);
-router.get('/checkSession', loginCtrl.checkSession);
 
 module.exports = router;

@@ -11,25 +11,16 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'username' });
         }
 
-        const result = await bcrypt.compare(password, results[0].password);
+        const passwordMatch = await bcrypt.compare(password, results[0].password);
 
-        if (!result) {
+        if (!passwordMatch) {
           return res.status(401).json({ message: 'password' });
       }
 
-      console.log(req.session.user);
-      console.log(req.session.user.username);
-      if (req.session.user && req.session.user.username) {
-        console.log("파괴");
-        req.session.destroy();
-      }
-
-      req.session.user = {
-        isLoggedIn: true,
-        username: results[0].username
-      };
-
-      console.log(req.session.user.username);
+      const logResults = await query(
+        'INSERT INTO usertimetable (logintime, user_id, logging) VALUES (NOW(), ?, 1)',
+        [results[0].id]
+    );
 
         res.status(200).json({ message: 'success' });
     } catch (err) {
@@ -58,30 +49,11 @@ exports.getLoginInfo = async (req, res) => {
   }
 };
 
-exports.getLogout = async (req, res) => {
+exports.getLogOut = async (req, res) => {
+  const { user_id } = req.body;
   try {
-      req.session.destroy();
-      res.status(200).json({ message: '로그아웃 성공' });
+      return res.status(200).json({ result });
   } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: '서버 오류' });
+      return res.status(500).json({ error : '로그아웃 오류 '});
   }
 };
-
-exports.checkSession = async (req, res) => {
-  if (req.session.user && req.session.user.username) {
-    res.status(200).json({ isLoggedIn: true, username: req.session.user.username });
-  } else {
-    res.status(401).json({ isLoggedIn: false });
-  }
-};
-
-
-exports.getUserTime = async (req, res) => {
-  try{
-
-  } catch (err)
-  {
-
-  }
-}

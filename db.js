@@ -8,8 +8,6 @@ let port = process.env.DB_PORT;
 
 const mysql = require('mysql');
 const util = require('util');
-const session = require('express-session');
-const mySqlStore = require('express-mysql-session')(session);
 
 const pool = mysql.createPool({
     connectionLimit: 10,
@@ -35,15 +33,6 @@ const connectDB = async () => {
     }
 };
 
-
-const sessionStore = new mySqlStore({
-  host,
-  user,
-  password,
-  database,
-  port,
-});
-
-module.exports = { connectDB, query, sessionStore };
+module.exports = { connectDB, query };
 
 
