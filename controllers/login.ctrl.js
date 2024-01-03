@@ -20,6 +20,14 @@ exports.login = async (req, res) => {
       const checkUser = await query('SELECT COUNT(*) as count FROM usertimetable WHERE user_id = ?', [results[0].id]);
 
       if (checkUser[0].count > 0) {
+        const temp = await query(
+            'UPDATE usertimetable SET logging = 1 WHERE user_id = ?',
+            [results[0].id]
+        );
+        const delay = (milliseconds) => new Promise(resolve => setTimeout(resolve, milliseconds));
+        await delay(100);
+
+
           const log = await query(
               'UPDATE usertimetable SET logintime = ?, logging = 1 WHERE user_id = ?',
               [new Date(), results[0].id]
@@ -60,10 +68,10 @@ exports.getLoginInfo = async (req, res) => {
 };
 
 exports.checkSession = async (req, res) => {
-    const { userId } = req.body;
+    const { username } = req.body;
 
     try {
-        const results = await query('SELECT logging FROM usertimetable WHERE user_id = ? ORDER BY logintime DESC LIMIT 1', [userId]);
+        const results = await query('SELECT logging FROM usertimetable WHERE user_id = (SELECT id FROM usertable WHERE username = ?) ORDER BY logintime DESC LIMIT 1', [username]);
 
         if (results.length === 0) {
             return res.status(404).json({ error: '로그인 기록 없음' });
@@ -76,6 +84,7 @@ exports.checkSession = async (req, res) => {
         return res.status(500).json({ error: '서버 오류' });
     }
 };
+
 
 exports.logout = async (req, res) => {
     const { username } = req.body;
