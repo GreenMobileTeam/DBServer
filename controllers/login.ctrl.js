@@ -20,14 +20,17 @@ exports.login = async (req, res) => {
       const checkUser = await query('SELECT COUNT(*) as count FROM usertimetable WHERE user_id = ?', [results[0].id]);
 
       if (checkUser[0].count > 0) {
-        const temp = await query(
-            'UPDATE usertimetable SET logging = 1 WHERE user_id = ?',
-            [results[0].id]
-        );
-        const delay = (milliseconds) => new Promise(resolve => setTimeout(resolve, milliseconds));
-        await delay(100);
 
+          const check = await query('SELECT logging FROM usertimetable WHERE user_id = (SELECT id FROM usertable WHERE username = ?) ORDER BY logintime DESC LIMIT 1', [username]);
+          const loginresult = check[0].logging === 1;
 
+          console.log(loginresult);
+
+          if(loginresult)
+          {
+            return res.status(401).json({ message: 'already login' });
+          }
+          
           const log = await query(
               'UPDATE usertimetable SET logintime = ?, logging = 1 WHERE user_id = ?',
               [new Date(), results[0].id]
@@ -38,9 +41,11 @@ exports.login = async (req, res) => {
               [results[0].id, new Date()]
           );
       }
-      
+      console.log("분명 잘 됐는데 왜 갑자기 안 되니?");
 
+      
         res.status(200).json({ message: 'success' });
+
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: '서버 오류' });
@@ -74,11 +79,18 @@ exports.checkSession = async (req, res) => {
         const results = await query('SELECT logging FROM usertimetable WHERE user_id = (SELECT id FROM usertable WHERE username = ?) ORDER BY logintime DESC LIMIT 1', [username]);
 
         if (results.length === 0) {
-            return res.status(404).json({ error: '로그인 기록 없음' });
+            return res.status(404).json({ message: '로그인 기록 없음' });
         }
 
         const isLogged = results[0].logging === 1;
-        res.status(200).json({ isLogged });
+        if(isLogged)
+        {
+            return res.status(401).json({ message: 'login' });
+        }
+        else
+        {
+            return res.status(200).json({ message: 'auto logout' });
+        }
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: '서버 오류' });
